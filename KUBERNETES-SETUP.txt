@@ -10,7 +10,7 @@ docker installation on master node and worker node
 ### Install packages to allow apt to use a repository over HTTPS
     apt-get update && apt-get install apt-transport-https ca-certificates curl software-properties-common
 
-### Add Docker’s official GPG key
+### Add Dockerâ€™s official GPG key
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 
 ### Add docker apt repository.
@@ -52,7 +52,7 @@ EOF
 apt-get update
 apt-get install -y kubelet kubeadm kubectl
 apt-mark hold kubelet kubeadm kubectl
-kubeadm init (please save the token while execution of this command)
+kubeadm init (please save the token while execution of this command on master node only)
 
 ###################
 Run as normal user on master node
@@ -62,9 +62,9 @@ Run as normal user on master node
 
 ##
 expoort port on master
-
+# run below commands as a root user in master node
 export KUBERNETES_MASTER=http:172.31.35.167:8080
-
+# run as normal user in master node
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
 
