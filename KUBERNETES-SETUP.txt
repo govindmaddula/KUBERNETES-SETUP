@@ -1,0 +1,81 @@
+
+###################################################
+docker installation on master node and worker node
+####################################################
+# Install Docker CE
+## Set up the repository:
+### Update the apt package index
+    apt-get update
+
+### Install packages to allow apt to use a repository over HTTPS
+    apt-get update && apt-get install apt-transport-https ca-certificates curl software-properties-common
+
+### Add Docker’s official GPG key
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+### Add docker apt repository.
+    add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) \
+    stable"
+
+## Install docker ce.
+apt-get update && apt-get install docker-ce=18.06.2~ce~3-0~ubuntu
+
+# Setup daemon.
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+
+mkdir -p /etc/systemd/system/docker.service.d
+
+# Restart docker.
+systemctl daemon-reload
+systemctl restart docker
+
+###################################################################
+kubernetes installation on master and worker node up to kubeadm init
+###################################################################3
+## open inbound rules for following ports(6443, 2379-2380, 10250, 10251, 10252) if your server in aws
+apt-get update && apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+apt-get install -y kubelet kubeadm kubectl
+apt-mark hold kubelet kubeadm kubectl
+kubeadm init (please save the token while execution of this command)
+
+###################
+Run as normal user on master node
+ mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+##
+expoort port on master
+
+export KUBERNETES_MASTER=http:172.31.35.167:8080
+
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+
+##################################################
+run the below comands in worker nodes
+##################################################
+## open the following ports in worker node(10250, 30000-32767)
+Run as root user
+kubeadm join 172.31.35.167:6443 --token tpseke.fg3ulr4uslloukas --discovery-token-ca-cert-hash sha256:2b8f79ae3b8cec502e83aa9756413a3f8117f04a20748bf76a7337f0af7a1b8d
+
+->kubectl get nodes -> on master
+#kubectl token create --print-join-command       --->it is showing existing token
+#docker swarm init -q -->it showing existing token
+
